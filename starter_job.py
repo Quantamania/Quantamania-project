@@ -4,11 +4,36 @@ from matplotlib.animation import FuncAnimation
 from qiskit import QuantumCircuit, Aer, transpile, assemble
 from qiskit.visualization import plot_bloch_multivector
 
+import strangeworks
+import qiskit
+from strangeworks_qiskit import StrangeworksProvider
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+IBM_RESOURCE= os.getenv('IBM_RESOURCE')
+
+
+strangeworks.authenticate(
+    api_key=IBM_RESOURCE,
+)
+
 class QuantumParticle:
     def __init__(self, mass, position, momentum):
         self.mass = mass
         self.position = position
         self.momentum = momentum
+
+    def apply_uncertainty(self):
+        position_uncertainty = np.random.normal(0, 0.1)
+        momentum_uncertainty = np.random.normal(0, 0.05)
+
+        self.position += position_uncertainty
+        self.momentum += momentum_uncertainty
+        
+        print(f"Applied Uncertainty: Position {position_uncertainty:.4f}, Momentum {momentum_uncertainty:.4f}")
 
 def apply_evolution_operator(qc, time_step, position_qubit, momentum_qubit):
     qc.rz(time_step, momentum_qubit)
@@ -24,9 +49,18 @@ def update(frame):
     
     apply_evolution_operator(qc, time_step, position_qubit=0, momentum_qubit=1)
     qc.measure_all()
+
+    provider = StrangeworksProvider()
+    backend = provider.get_backend("ibmq_qasm_simulator")
+    particle.apply_uncertainty()
+
+    job = qiskit.execute(qc, backend, shots=100).result()
+
     
-    result = simulator.run(qc).result()
-    counts = result.get_counts()
+    # result = simulator.run(job).result()
+    # counts = result.get_counts()
+    
+    print(job.get_counts())
     
     positions.append(particle.position)
     momenta.append(particle.momentum)
