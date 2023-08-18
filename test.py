@@ -1,39 +1,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from qiskit import QuantumCircuit, Aer, executes
 
 class QuantumParticle:
-    def __init__(self, mass, position, momentum):
-        self.mass = mass
-        self.position = position
-        self.momentum = momentum
+    def __init__(self):
+        self.state_vector = np.array([1.0, 0.0])  # Initialize in a position state
 
-    def apply_uncertainty(self):
-        position_uncertainty = np.random.normal(0, 0.1)
-        momentum_uncertainty = np.random.normal(0, 0.05)
-        
-        self.position += position_uncertainty
-        self.momentum += momentum_uncertainty
-        
-        if np.random.rand() < abs(self.position) ** 2:
-            self.position = np.random.choice([-1, 1]) * np.sqrt(abs(self.position))
+    def apply_position_operator(self):
+        qc = QuantumCircuit(2)
+        qc.h(0)  # Apply a Hadamard gate to create a superposition of positions
+        qc.cx(0, 1)  # Apply a controlled-X gate to simulate position evolution
+        simulator = Aer.get_backend('statevector_simulator')
+        result = execute(qc, simulator).result()
+        self.state_vector = result.get_statevector(qc)
 
 def update(frame):
     global particle
-    particle.apply_uncertainty()
-    
-    particle.position += particle.momentum * time_step / particle.mass
-    particle.momentum -= particle.position * time_step
-    
-    positions.append(particle.position)
-    momenta.append(particle.momentum)
-    
-    line.set_xdata(range(len(positions)))
-    line.set_ydata(positions)
-    
+    particle.apply_position_operator()
+
+    probabilities = np.abs(particle.state_vector) ** 2
+
+    line.set_xdata(range(len(probabilities)))
+    line.set_ydata(probabilities)
+
     ax.relim()
     ax.autoscale_view()
     fig.canvas.draw()
+
+# ... rest of the code remains the same
+
 
 def main():
     global particle, positions, momenta, time_step, fig, ax, line
