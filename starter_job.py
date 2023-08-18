@@ -10,7 +10,7 @@ from strangeworks_qiskit import StrangeworksProvider
 
 import os
 from dotenv import load_dotenv
-
+ 
 load_dotenv()
 
 IBM_RESOURCE= os.getenv('IBM_RESOURCE')
