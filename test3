@@ -10,6 +10,15 @@ class QuantumParticle:
         self.position = position
         self.momentum = momentum
 
+    def apply_uncertainty(self):
+        position_uncertainty = np.random.normal(0, 0.1)
+        momentum_uncertainty = np.random.normal(0, 0.05)
+
+        self.position += position_uncertainty
+        self.momentum += momentum_uncertainty
+        
+        print(f"Applied Uncertainty: Position {position_uncertainty:.4f}, Momentum {momentum_uncertainty:.4f}")
+
 def apply_evolution_operator(qc, time_step, position_qubit, momentum_qubit):
     qc.rz(time_step, momentum_qubit)
     qc.rz(-time_step, position_qubit)
@@ -27,6 +36,8 @@ def update(frame):
     
     result = simulator.run(qc).result()
     counts = result.get_counts()
+    
+    particle.apply_uncertainty()  # Apply uncertainty after updating position and momentum
     
     positions.append(particle.position)
     momenta.append(particle.momentum)
