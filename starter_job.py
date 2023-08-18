@@ -1,26 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from qiskit import QuantumCircuit, Aer, transpile, assemble
-from qiskit.visualization import plot_bloch_multivector
+from qiskit import QuantumCircuit, Aer
 
-import strangeworks
-import qiskit
-from strangeworks_qiskit import StrangeworksProvider
-
-import os
-from dotenv import load_dotenv
- 
-load_dotenv()
-
-IBM_RESOURCE= os.getenv('IBM_RESOURCE')
-
-
-strangeworks.authenticate(
-    api_key=IBM_RESOURCE,
-)
-
-class QuantumParticle:
+class QuantumNeutron:
     def __init__(self, mass, position, momentum):
         self.mass = mass
         self.position = position
@@ -43,27 +26,20 @@ def apply_evolution_operator(qc, time_step, position_qubit, momentum_qubit):
     qc.cx(momentum_qubit, position_qubit)
 
 def update(frame):
-    global particle, qc, simulator
-    particle.position += particle.momentum * time_step / particle.mass
-    particle.momentum -= particle.position * time_step
+    global neutron, qc, simulator
+    neutron.position += neutron.momentum * time_step / neutron.mass
+    neutron.momentum -= neutron.position * time_step
     
     apply_evolution_operator(qc, time_step, position_qubit=0, momentum_qubit=1)
     qc.measure_all()
-
-    provider = StrangeworksProvider()
-    backend = provider.get_backend("ibmq_qasm_simulator")
-
-    job = qiskit.execute(qc, backend, shots=1)
-
-    particle.apply_uncertainty()
     
     result = simulator.run(qc).result()
+    counts = result.get_counts()
     
-    print(job.result().get_counts())
+    neutron.apply_uncertainty()  # Apply uncertainty after updating position and momentum
     
-    
-    positions.append(particle.position)
-    momenta.append(particle.momentum)
+    positions.append(neutron.position)
+    momenta.append(neutron.momentum)
     
     line.set_xdata(range(len(positions)))
     line.set_ydata(positions)
@@ -73,9 +49,10 @@ def update(frame):
     fig.canvas.draw()
 
 def main():
-    global particle, positions, momenta, time_step, fig, ax, line, qc, simulator
+    global neutron, positions, momenta, time_step, fig, ax, line, qc, simulator
     
-    particle = QuantumParticle(mass=1.0, position=0.0, momentum=1.0)
+    neutron = QuantumNeutron(mass=1.0, position=0.0, momentum=1.0)
+
     num_steps = 100
     time_step = 0.1
     positions = []
@@ -87,7 +64,7 @@ def main():
     ax.set_ylim(-10, 10)
     ax.set_xlabel('Time Steps')
     ax.set_ylabel('Value')
-    ax.set_title('Particle Trajectory with Quantum-Inspired Uncertainty')
+    ax.set_title('Neutron Trajectory with Quantum-Inspired Uncertainty')
     ax.legend()
 
     simulator = Aer.get_backend('qasm_simulator')
@@ -99,9 +76,8 @@ def main():
 
     # Display initial attributes
     print("Initial Attributes:")
-    print(f"Mass: {particle.mass}")
-    print(f"Position: {particle.position}")
-    print(f"Momentum: {particle.momentum}")
+    print(f"Position: {neutron.position}")
+    print(f"Momentum: {neutron.momentum}")
 
 if __name__ == "__main__":
     main()
