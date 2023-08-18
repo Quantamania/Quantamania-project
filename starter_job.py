@@ -52,15 +52,15 @@ def update(frame):
 
     provider = StrangeworksProvider()
     backend = provider.get_backend("ibmq_qasm_simulator")
+
+    job = qiskit.execute(qc, backend, shots=1)
+
     particle.apply_uncertainty()
-
-    job = qiskit.execute(qc, backend, shots=1).result()
-
     
-    result = simulator.run(job).result()
-    counts = result.get_counts()
+    result = simulator.run(qc).result()
     
-    print(job.get_counts())
+    print(job.result().get_counts())
+    
     
     positions.append(particle.position)
     momenta.append(particle.momentum)
@@ -76,7 +76,7 @@ def main():
     global particle, positions, momenta, time_step, fig, ax, line, qc, simulator
     
     particle = QuantumParticle(mass=1.0, position=0.0, momentum=1.0)
-    num_steps = 50
+    num_steps = 100
     time_step = 0.1
     positions = []
     momenta = []
