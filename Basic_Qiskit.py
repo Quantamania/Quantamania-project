@@ -6,14 +6,16 @@ load_dotenv()
 IBM_RESOURCE= os.getenv('IBM_RESOURCE')
 
 
-import strangeworks
+import strangeworks as sw
 import qiskit
 from strangeworks_qiskit import StrangeworksProvider
 
 # get your API key from the Strangeworks Portal
-strangeworks.authenticate(
+sw.authenticate(
     api_key=IBM_RESOURCE,
 )
+
+client =sw.Client()
 
 # Optional: If you have multiple instances (resources) of a product, 
 # you can set the resource to use here.
@@ -31,10 +33,6 @@ for backend in backends:
     print(f'  - {backend.name()}')
 
 # create a simple quantum circuit
-qc = qiskit.QuantumCircuit(2, 2)
-qc.h(0)
-qc.cx(0, 1)
-qc.measure([0, 1], [0, 1])
 
 # Choose a backend (the IBM-hosted simulator in this case)
 backend = provider.get_backend("ibmq_qasm_simulator")
@@ -42,8 +40,17 @@ backend = provider.get_backend("ibmq_qasm_simulator")
 # Execute the circuit
 print('\n🤖 Executing Circuit...\n')
 
-job = qiskit.execute(qc, backend, shots=100)
 
+import strangeworks as sw
+
+
+# Submit the job to Strangeworks
+job = client.submit_job(
+    script="starter_job.py",
+    runtime="qiskit",
+)
+
+job.wait()
 # At this point, the job is running on the Strangeworks Platform.
 # You can check the status of the job in the Portal, even if 
 # stop this script.
