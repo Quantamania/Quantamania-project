@@ -54,11 +54,11 @@ def update(frame):
     backend = provider.get_backend("ibmq_qasm_simulator")
     particle.apply_uncertainty()
 
-    job = qiskit.execute(qc, backend, shots=100).result()
+    job = qiskit.execute(qc, backend, shots=1).result()
 
     
-    # result = simulator.run(job).result()
-    # counts = result.get_counts()
+    result = simulator.run(job).result()
+    counts = result.get_counts()
     
     print(job.get_counts())
     
@@ -76,7 +76,7 @@ def main():
     global particle, positions, momenta, time_step, fig, ax, line, qc, simulator
     
     particle = QuantumParticle(mass=1.0, position=0.0, momentum=1.0)
-    num_steps = 100
+    num_steps = 50
     time_step = 0.1
     positions = []
     momenta = []
