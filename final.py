@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-from qiskit import QuantumCircuit, Aer
+from qiskit import QuantumCircuit, Aer, transpile, assemble
+import random
 
 class QuantumNeutron:
     def __init__(self, mass, position, momentum):
@@ -10,11 +11,46 @@ class QuantumNeutron:
         self.momentum = momentum
 
     def apply_uncertainty(self):
-        position_uncertainty = np.random.normal(0, 0.1)
-        momentum_uncertainty = np.random.normal(0, 0.05)
+        random_bits = quantum_random_bit_generator(2)       
+
+        # Convert the random bits to an integer
+        random_integer = int(random_bits, 2)
+
+        # Use a classical random number generator to decide the sign
+        if random.random() < 0.5:
+            random_integer *= -1
+
+        position_uncertainty = np.random.normal(0, 0.1) + random_integer/2
+        momentum_uncertainty = np.random.normal(0, 0.05) + random_integer/2
 
         self.position += position_uncertainty
         self.momentum += momentum_uncertainty
+
+
+def quantum_random_bit_generator(num_bits):
+    # Create a quantum circuit with num_bits qubits
+    circuit = QuantumCircuit(num_bits, num_bits)
+    
+    # Apply Hadamard gates to create superposition
+    for i in range(num_bits):
+        circuit.h(i)
+    
+    # Measure the qubits
+    circuit.measure(range(num_bits), range(num_bits))
+    
+    # Simulate the circuit on a quantum simulator
+    simulator = Aer.get_backend('qasm_simulator')
+    job = assemble(transpile(circuit, simulator), shots=1)
+    result = simulator.run(job).result()
+    
+    # Get the measured classical bits
+    random_bits = list(result.get_counts().keys())[0]
+    
+    return random_bits
+
+    
+
+
 
 def apply_entanglement(qc, position_qubit, momentum_qubit):
     qc.h(position_qubit)
