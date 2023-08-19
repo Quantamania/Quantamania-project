@@ -8,8 +8,8 @@
   `
 </h4>
 
-## Refer to End-Result Branch for final commits
+## Refer to Main Branch for final commits
 
 ***
-Current Working Product is ```starter_job.py```
+Final Working Product is ```app.py```
 ***
