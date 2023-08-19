@@ -54,7 +54,7 @@ def update(frame):
 def main():
     global neutron, positions, momenta, time_step, fig, ax, line, qc, simulator
 
-    neutron = QuantumNeutron(mass=1.008, position=0.0, momentum=0.01)
+    neutron = QuantumNeutron(mass=1.008, position=0.0, momentum=0.5)
 
     num_steps = 100
     time_step = 0.1
