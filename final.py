@@ -9,57 +9,52 @@ class QuantumNeutron:
         self.position = position
         self.momentum = momentum
 
+    def apply_uncertainty(self):
+        position_uncertainty = np.random.normal(0, 0.1)
+        momentum_uncertainty = np.random.normal(0, 0.05)
+
+        self.position += position_uncertainty
+        self.momentum += momentum_uncertainty
+
 def apply_entanglement(qc, position_qubit, momentum_qubit):
     qc.h(position_qubit)
     qc.cx(position_qubit, momentum_qubit)
     qc.cx(momentum_qubit, position_qubit)
     qc.h(momentum_qubit)
 
-def apply_evolution_operator(qc, time_step, position_qubit, momentum_qubit):
-    """
-    Apply the quantum evolution operator for the neutron.
-
-    Args:
-        qc: The quantum circuit.
-        time_step: The time step.
-        position_qubit: The qubit representing the position of the neutron.
-        momentum_qubit: The qubit representing the momentum of the neutron.
-    """
-
-    qc.rz(time_step * neutron.mass, position_qubit)
-    qc.rx(time_step * neutron.momentum, momentum_qubit)
+def apply_evolution_operator(qc, time_step, position_qubit, momentum_qubit, neutron_mass):
+    qc.rz(time_step * neutron_mass, position_qubit)
+    qc.rx(time_step * neutron_mass, momentum_qubit)
     qc.cx(position_qubit, momentum_qubit)
-
 
 def update(frame):
     global neutron, qc, simulator
     neutron.position += neutron.momentum * time_step / neutron.mass
     neutron.momentum -= neutron.position * time_step
-    
-    apply_evolution_operator(qc, time_step, position_qubit=0, momentum_qubit=1)
+
+    apply_evolution_operator(qc, time_step, position_qubit=0, momentum_qubit=1, neutron_mass=neutron.mass)
     apply_entanglement(qc, position_qubit=0, momentum_qubit=1)
     qc.measure_all()
-    
+
     result = simulator.run(qc).result()
     counts = result.get_counts()
-    
-    neutron.position = (neutron.position + neutron.momentum) / 2
-    neutron.momentum = (neutron.momentum - neutron.position) / 2
-    
+
+    neutron.apply_uncertainty()  # Apply uncertainty after updating position and momentum
+
     positions.append(neutron.position)
     momenta.append(neutron.momentum)
-    
+
     line.set_xdata(range(len(positions)))
     line.set_ydata(positions)
-    
+
     ax.relim()
     ax.autoscale_view()
     fig.canvas.draw()
 
 def main():
     global neutron, positions, momenta, time_step, fig, ax, line, qc, simulator
-    
-    neutron = QuantumNeutron(mass=1.0, position=0.0, momentum=1.0)
+
+    neutron = QuantumNeutron(mass=1.008, position=0.0, momentum=0.01)
 
     num_steps = 100
     time_step = 0.1
@@ -71,8 +66,8 @@ def main():
     ax.set_xlim(0, num_steps)
     ax.set_ylim(-10, 10)
     ax.set_xlabel('Time Steps')
-    ax.set_ylabel('Value')
-    ax.set_title('Neutron Trajectory with Entanglement')
+    ax.set_ylabel('Position')
+    ax.set_title('Neutron (Particle) Trajectory with Quantum-Inspired Uncertainty')
     ax.legend()
 
     simulator = Aer.get_backend('qasm_simulator')
